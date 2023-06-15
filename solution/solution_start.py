@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 import os
+import json
 
 def get_params() -> dict:
     parser = argparse.ArgumentParser(description='DataTest')
@@ -10,7 +11,19 @@ def get_params() -> dict:
     parser.add_argument('--output_location', required=False, default="./output_data/outputs/")
     return vars(parser.parse_args())
 
+def expand(chosen_column, join_id_column,desired_column_name):
 
+    dictionary = []
+
+    for i,k in zip(chosen_column,join_id_column):
+        if i:
+            i = i.replace("'", '"').replace(" ", "")
+            i = json.loads(i)
+            dict1 = {desired_column_name: k }
+            new_dict = {**dict1, **i}
+            dictionary.append(new_dict)
+
+    return pd.DataFrame(dictionary)
 
 def main():
     params = get_params()
@@ -36,9 +49,10 @@ def main():
 #    print(transactions)
     cust_trans = pd.merge(customers, transactions, on='customer_id')
     print(cust_trans)
-    product_trans =cust_trans['basket'].to_csv()
-    print(product_trans)
-
+    customer = cust_trans['customer_id'].tolist()
+    product_trans = cust_trans['basket'].tolist()
+    df = expand(products,cust_trans,'product_id')
+    print(df)
 
 ####
 
